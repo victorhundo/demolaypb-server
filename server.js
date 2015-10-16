@@ -2,6 +2,8 @@
 //  OpenShift sample Node application
 var express = require('express');
 var fs      = require('fs');
+var sqlite3 = require('sqlite3').verbose();
+var db      = new sqlite3.Database('./banco_dados.db');
 
 
 /**
@@ -101,8 +103,22 @@ var SampleApp = function() {
         };
 
         self.routes['/'] = function(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            res.send(self.cache_get('index.html') );
+
+            var exec = require('child_process').exec;
+            var teste = [];
+
+            exec('bash ./curl_noticias.sh', function(error, stdout, stderr){
+                console.log(stdout);
+            });
+
+            
+            db.each("SELECT rowid AS id, titulo, img, link FROM noticias", function(err, row) {
+                teste.push({"titulo":row.titulo, "link":row.link, "img":row.img});
+            }, function(){
+                res.json(teste);
+            });
+
+            
         };
     };
 
