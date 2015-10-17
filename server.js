@@ -24,7 +24,7 @@ var SampleApp = function() {
      */
     self.setupVariables = function() {
         //  Set the environment variables we need.
-        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
+        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
         self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
         if (typeof self.ipaddress === "undefined") {
@@ -104,6 +104,10 @@ var SampleApp = function() {
 
         self.routes['/'] = function(req, res) {
 
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+            res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+
             var exec = require('child_process').exec;
             var teste = [];
 
@@ -130,6 +134,15 @@ var SampleApp = function() {
     self.initializeServer = function() {
         self.createRoutes();
         self.app = express.createServer();
+
+        //Permitindo acesso para todos os dominios
+        self.app.use(function(req, res, next) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+            res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+            //req.setHeader('Authorization');
+            next();
+        });
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
